@@ -1,25 +1,32 @@
+import json
+import time
+import schedule
+from datetime import datetime
 from telethon import TelegramClient
 from telethon.tl.functions.photos import DeletePhotosRequest, UploadProfilePhotoRequest
-import schedule, time
 
-from personal_information import api_id, api_hash, phone
+from moduls.personal_information import API_ID, API_HASH, phone
 
-timer = 0
-client = TelegramClient("session_name", api_id, api_hash)
 
-async def change_avatar(hours):
+client = TelegramClient("session_name", API_ID, API_HASH)
+
+async def change_avatar(work):
     await client.start(phone)
     await client(DeletePhotosRequest(await client.get_profile_photos('me')))
     await client(UploadProfilePhotoRequest(
-        file = await client.upload_file("img/"+str(hours)+".jpg")
+        file = await client.upload_file("img/"+work+".jpg")
     ))
-    print(hours)
+with open("schedule.json", 'r', encoding='utf-8') as f:
+    timetable = json.load(f)[f"{datetime.today().day}.{datetime.today().month}.{datetime.today().year}"]
+    times = timetable.keys()
+schedule.clear()
+for i in times:
+    print(i)
+    schedule.every().day.at(i).do(lambda image: client.loop.run_until_complete(change_avatar(timetable[i])))
 
 
-schedule.every(1).hours.do(lambda: client.loop.run_until_complete(change_avatar(timer)))
+
 while True:
-    if timer > 24:
-        timer = 0
     schedule.run_pending()
-    time.sleep(3600)
-    timer += 1
+    print(schedule.get_jobs())
+    time.sleep(1)
