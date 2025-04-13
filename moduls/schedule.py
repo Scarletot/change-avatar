@@ -15,6 +15,7 @@ from aiogram_calendar import SimpleCalendar, SimpleCalendarCallback
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
+
 @dp.message(Command("set"))
 async def cmd_set(message: Message):
     if not is_authorized(message):
@@ -28,6 +29,8 @@ async def process_calendar(callback_query: CallbackQuery, callback_data: SimpleC
     selected_date = callback_data
     global DAY
     DAY = str(selected_date.day) +"."+ str(selected_date.month)+"."+ str(selected_date.year)
+    global weekday
+    weekday = datetime.strptime(DAY, "%d.%m.%Y").weekday()
     await callback_query.message.answer(f"Обрана дата: {selected_date.day}.{selected_date.month}.{selected_date.year} Обери опцію.", reply_markup=keyboard)
     await callback_query.message.delete()
     await callback_query.answer()
@@ -35,17 +38,17 @@ async def process_calendar(callback_query: CallbackQuery, callback_data: SimpleC
 @dp.callback_query(F.data == "minibar")
 async def minibar(callback_query: CallbackQuery):
     schedule = load_schedule()
-    if datetime.strptime(DAY, "%d.%m.%Y").weekday() == 0 or datetime.strptime(DAY, "%d.%m.%Y").weekday() == 3 or datetime.strptime(DAY, "%d.%m.%Y").weekday() == 5:       
+    if weekday == 0 or weekday == 3 or weekday == 5:       
         schedule[DAY] = {"06:00": "wake_up",
                         "09:00": "work",
                         "18:30": "workout",
                         "21:00": "relax",
-                        "24:00": "sleep"}
+                        "23:59": "sleep"}
     else:
         schedule[DAY] = {"06:00": "wake_up",
                         "09:00": "work",
                         "19:00": "relax",
-                        "24:00": "sleep"}        
+                        "23:59": "sleep"}        
     save_schedule(schedule)
     await callback_query.message.delete()
     await callback_query.answer("Зміна збережена")
@@ -54,25 +57,26 @@ async def minibar(callback_query: CallbackQuery):
 @dp.callback_query(F.data == "club")
 async def calb(callback_query: CallbackQuery):
     schedule = load_schedule()
-    if  datetime.strptime(DAY, "%d.%m.%Y").weekday() == 0 or datetime.strptime(DAY, "%d.%m.%Y").weekday() == 3 or datetime.strptime(DAY, "%d.%m.%Y").weekday() == 5:         
+    if weekday == 0 or weekday == 3 or weekday == 5:          
         schedule[DAY] = {"06:00": "wake_up",
                         "08:00": "workout",
                         "11:00": "work",
                         "22:00": "relax",
-                        "24:00": "sleep"}
+                        "23:59": "sleep"}
     else:
         schedule[DAY] = {"08:00": "wake_up",
                         "11:00": "work",
                         "22:00": "relax",
-                        "24:00": "sleep"}
+                        "23:59": "sleep"}
     save_schedule(schedule)
-    await callback_query.answer()
+    await callback_query.message.delete()
+    await callback_query.answer("Зміна збережена")
 
     
 @dp.callback_query(F.data == "olivera")
 async def olivera(callback_query: CallbackQuery):
     schedule = load_schedule()
-    if  datetime.strptime(DAY, "%d.%m.%Y").weekday() == 0 or datetime.strptime(DAY, "%d.%m.%Y").weekday() == 3 or datetime.strptime(DAY, "%d.%m.%Y").weekday() == 5:        
+    if weekday == 0 or weekday == 3 or weekday == 5:          
         schedule[DAY] = {"04:30": "wake_up",
                         "06:30": "work",
                         "16:30": "workout",
@@ -84,22 +88,43 @@ async def olivera(callback_query: CallbackQuery):
                         "16:30": "relax",
                         "22:00": "sleep"}
     save_schedule(schedule)
-    await callback_query.answer()
+    await callback_query.message.delete()
+    await callback_query.answer("Зміна збережена")
 
 
 @dp.callback_query(F.data == "weekend")
 async def weekend(callback_query: CallbackQuery):
     schedule = load_schedule()
-    schedule[DAY] = {"6:00": "wake_up"}
+    if weekday == 0 or weekday == 3 or weekday == 5:   
+        schedule[DAY] = {"08:00": "wake_up",
+                        "10:00": "workout",
+                        "13:00": "relax",
+                        "23:59": "sleep"}
+    else:
+        schedule[DAY] = {"08:00": "wake_up",
+                        "10:00": "relax",
+                        "23:59": "sleep"}
     save_schedule(schedule)
-    await callback_query.answer()
+    await callback_query.message.delete()
+    await callback_query.answer("Зміна збережена")
 
 @dp.callback_query(F.data == "college")
 async def college(callback_query: CallbackQuery):
     schedule = load_schedule()
-    schedule[DAY] = {"6:00": "wake_up"}
+    if weekday == 0 or weekday == 3 or weekday == 5:    
+        schedule[DAY] = {"07:00": "wake_up",
+                        "09:00": "study",
+                        "16:00": "workout",
+                        "18:00": "relax",
+                        "23:59": "sleep"}
+    else:
+        schedule[DAY] = {"07:00": "wake_up",
+                        "09:00": "study",
+                        "16:00": "relax",
+                        "23:59": "sleep"}
     save_schedule(schedule)
-    await callback_query.answer()
+    await callback_query.message.delete()
+    await callback_query.answer("Зміна збережена")
 
 
 
